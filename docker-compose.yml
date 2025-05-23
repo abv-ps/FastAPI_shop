@@ -1,0 +1,56 @@
+services:
+  app:
+    build: .
+    ports:
+      - "7000:7000"
+    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 7000
+    volumes:
+      - .:/app
+    depends_on:
+      - mongo
+      - init_cassandra
+      - redis
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+  mongo_backup:
+    build:
+      context: ./app/mongo_cron
+    container_name: mongo_cron
+    volumes:
+      - ./app/mongo_backup:/data/backup
+    depends_on:
+      - mongo
+  redis:
+    image: redis:7.4.2
+    restart: always
+    ports:
+      - "6379:6379"
+  cassandra:
+    image: cassandra:4.1
+    ports:
+      - "9042:9042"
+    environment:
+      - CASSANDRA_CLUSTER_NAME=event_logs
+      - CASSANDRA_DC=dc1
+  init_cassandra:
+    image: cassandra:4.1
+    depends_on:
+      - cassandra
+    entrypoint: >
+      bash -c "
+      echo 'Waiting for Cassandra to be ready...';
+      until cqlsh cassandra -e 'describe keyspaces'; do
+        echo 'Still waiting...';
+        sleep 10;
+      done;
+      echo 'Cassandra is up. Running init script...';
+      cqlsh cassandra -f /scripts/init.cql"
+    volumes:
+      - ./scripts/init.cql:/scripts/init.cql
+volumes:
+  mongo_data:
