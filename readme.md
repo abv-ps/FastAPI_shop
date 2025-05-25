@@ -115,12 +115,16 @@ The project includes a logging system using Apache Cassandra to store user activ
 These endpoints are available under /logs:
 
 - POST /logs/ — Create a new log entry.
-
 - GET /logs/ — Get logs by event type for the last 24 hours (default).
-
+<pre>
+http://localhost:7000/logs/?event_type=order_created
+http://localhost:7000/logs/?event_type=order_created&hours=12
+</pre>
 - PUT /logs/{event_id} — Update log metadata.
-
 - DELETE /logs/old — Delete logs older than a given number of days (default: 7).
+<pre>
+DELETE /logs/old?days=7
+</pre>
 
 ### Implementation
 - Cassandra is configured via Docker Compose and initialized with a schema using init_cassandra.

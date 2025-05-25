@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import List
 
-from fastapi import APIRouter, BackgroundTasks, Header, Depends
+from fastapi import APIRouter, Depends
 
 
 from app.dependencies.auth import get_current_user_id_optional
@@ -13,12 +13,11 @@ router = APIRouter(prefix="/orders", tags=["Orders"])
 @router.post("/", response_model=OrderOut)
 async def add_order(
     order: OrderCreate,
-    background_tasks: BackgroundTasks,
     user_id: str = Depends(get_current_user_id_optional)
 ):
     for item in order.items:
         await update_stock(item.product_id, item.quantity, user_id=user_id)
-    return await create_order(order.model_dump(), background_tasks, user_id)
+    return await create_order(order.model_dump(), user_id=user_id)
 
 
 @router.get("/recent/", response_model=List[OrderOut])

@@ -1,5 +1,6 @@
 import json
-from fastapi import BackgroundTasks
+
+import orjson
 from datetime import datetime, timezone
 from app.db.database import db
 from app.db.cassandra_log import CassandraEventLogger
@@ -30,7 +31,7 @@ async def create_order(data: dict, user_id: str = "anonymous"):
     order["id"] = str(order["_id"])
     order.pop("_id")
 
-    metadata_json = json.dumps(order)
+    metadata_json = orjson.dumps(order).decode()
 
     await event_logger.create_log_async(
         user_id=user_id,

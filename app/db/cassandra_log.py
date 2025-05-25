@@ -10,6 +10,7 @@ from app.utils import cassandra_commands as CQL
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
+
 class CassandraEventLogger:
     def __init__(self,
                  host: str = "cassandra",
